@@ -1,0 +1,29 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - name: Test Go
+        working-directory: go-backend
+        run: go test ./...
+      - name: Build Go image
+        run: docker build -t taskflow-go-backend:ci ./go-backend
+
+  build-laravel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Laravel image
+        run: docker build -t taskflow-laravel:ci .
