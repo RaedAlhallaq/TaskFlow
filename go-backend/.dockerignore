@@ -1,0 +1,12 @@
+﻿# VCS
+.git
+.gitignore
+
+# Tests (not needed in runtime image)
+*_test.go
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea
+.vscode
