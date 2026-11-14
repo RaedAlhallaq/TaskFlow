@@ -21,6 +21,26 @@ jobs:
       - name: Build Go image
         run: docker build -t taskflow-go-backend:ci ./go-backend
 
+  test-laravel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: sqlite3, zip
+      - name: Install dependencies
+        working-directory: laravel-app
+        run: composer install --no-interaction --prefer-dist
+      - name: Run Laravel tests
+        working-directory: laravel-app
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan migrate --seed --force
+          php artisan test
+
   build-laravel:
     runs-on: ubuntu-latest
     steps:
