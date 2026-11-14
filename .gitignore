@@ -1,0 +1,11 @@
+﻿# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# Go build artifacts
+go-backend/*.exe
+go-backend/*.test
+go-backend/main
