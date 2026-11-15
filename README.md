@@ -1,5 +1,7 @@
 # TaskFlow — Laravel + Livewire + Go
 
+**Repository:** https://github.com/RaedAlhallaq/TaskFlow
+
 TaskFlow is a small full-stack web application with two parts:
 
 1. **Task Manager (Laravel + Livewire)** — create, edit, delete, change status, search and filter tasks without page reloads.
