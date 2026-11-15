@@ -17,11 +17,15 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 
 # Install PHP dependencies first (better layer caching)
+# --no-scripts: post-autoload-dump needs artisan, which is copied next
 COPY laravel-app/composer.json laravel-app/composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
 # Copy application source
 COPY laravel-app/ ./
+
+# Re-run autoload + package discovery now that artisan exists
+RUN composer dump-autoload --optimize --no-interaction
 
 # Prepare runtime environment
 RUN cp .env.example .env \
