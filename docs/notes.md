@@ -2,15 +2,24 @@
 
 ## 1. Biggest Docker problem faced
 
-_To be completed after running `docker build` / `docker compose up` on a machine with Docker.
-This section must describe a REAL problem encountered and how it was solved (not invented)._
+**Problem:** The Laravel image build failed during `composer install` with:
+```
+> @php artisan package:discover --ansi
+Could not open input file: artisan
+Script @php artisan package:discover --ansi handling the post-autoload-dump event returned with error code 1
+```
 
-Candidate issues to watch (to be verified during testing):
-- `GO_API_URL=http://127.0.0.1:8080` works for local dev but NOT between containers; Compose overrides it to `http://go-backend:8080`.
-- Laravel needs `storage/` and `bootstrap/cache/` writable by the runtime user.
-- SQLite file must be created before `php artisan migrate` runs in the image.
-- PHP extensions `pdo_sqlite` and `zip` must be installed in the Alpine base image.
+**Cause:** I copied only `composer.json` and `composer.lock` before running `composer install` (for better layer caching). Laravel's `composer.json` has a `post-autoload-dump` script that runs `php artisan package:discover`, which needs the `artisan` file — but `artisan` (and the rest of the app) had not been copied into the image yet.
+
+**How we discovered it:** `docker compose up --build` stopped at the Laravel build step with the error above; the Go image built fine, so the failure was Laravel-specific.
+
+**How we solved it:** Split dependency installation into two steps:
+1. `composer install --no-dev ... --no-scripts` (dependencies only, no artisan needed).
+2. Copy the full application source (`COPY laravel-app/ ./`).
+3. `composer dump-autoload --optimize` (now `artisan` exists, so `package:discover` succeeds).
+
+This keeps the dependency layer cacheable while fixing the missing-file error. The final image builds successfully and both containers report healthy (`taskflow-go` and `taskflow-web`).
 
 ## 2. Most important Git/GitHub lesson learned
 
-Keeping the repository clean from the start (proper `.gitignore` for `vendor/`, `.env`, and build artifacts) prevents large or secret files from ever entering history. Meaningful, scoped commits (feat/chore/docker/docs/fix) make the project's progress readable and reviewable, and a feature branch + Pull Request (Bonus G) keeps `main` stable.
+Keeping the repository clean from the start (proper `.gitignore` for `vendor/`, `.env`, and build artifacts such as compiled Blade views) prevents large or secret files from ever entering history. Meaningful, scoped commits (feat/chore/docker/docs/fix/ci) make the project's progress readable and reviewable. A feature branch + Pull Request (Bonus G) keeps `main` stable while changes are reviewed.
