@@ -186,6 +186,13 @@ docs: add technical notes
 
 A feature branch + Pull Request workflow (Bonus G) is used for documentation changes.
 
+## Troubleshooting
+
+- **`composer install` fails with "Could not open input file: artisan"**: the `post-autoload-dump` script needs `artisan`. Run `composer install --no-scripts` first, copy the app source, then `composer dump-autoload --optimize`. (Already handled in the Dockerfile.)
+- **Books page shows "تعذّر الاتصال بخادم Go"**: ensure the Go container/service is running and `GO_API_URL` points to it (`http://go-backend:8080` in Compose, `http://host.docker.internal:8080` for a standalone Laravel container).
+- **Laravel container unhealthy / 500 on `/up`**: check that `storage/` and `bootstrap/cache/` are writable and that migrations ran (`php artisan migrate --force`).
+- **Port already in use**: change host ports in `docker-compose.yml` (e.g. `"8001:8000"`).
+
 ## Attribution
 
 TaskFlow is original work by the student (Raed Alhallaq, student ID 120220871). No third-party project was used as a base, so no external attribution is required.
